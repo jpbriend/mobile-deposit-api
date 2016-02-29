@@ -4,7 +4,7 @@
 
     <groupId>com.cloudbees.example.mobile.api</groupId>
     <artifactId>mobile-deposit-api</artifactId>
-    <version>0.0.19-SNAPSHOT</version>
+    <version>1.0.0-${BUILD_NUMBER}</version>
     <name>Mobile Deposit API</name>
     <description>CloudBees example Mobile Deposit API</description>
     <url>https://github.com/kmadel/mobile-deposit-api</url>
@@ -52,8 +52,8 @@
         <!-- (1) Sonar connection properties - typically specified on commandline -->
         <sonar.host.url>http://sonar.beedemo.net:9001</sonar.host.url>
         <sonar.jdbc.url>jdbc:postgresql://sonar.beedemo.net:5432/sonar</sonar.jdbc.url>
-        <sonar.jdbc.username>${sonar.jdbc.username}</sonar.jdbc.username>
-        <sonar.jdbc.password>${sonar.jdbc.password}</sonar.jdbc.password>
+        <sonar.jdbc.username>user</sonar.jdbc.username>
+        <sonar.jdbc.password>pass</sonar.jdbc.password>
         <!-- end (1) -->
 
         <!-- (2) Help Sonar to be sure about language and version -->
@@ -81,12 +81,21 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

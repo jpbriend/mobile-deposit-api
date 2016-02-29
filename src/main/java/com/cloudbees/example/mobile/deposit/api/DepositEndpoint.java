@@ -7,11 +7,14 @@ package com.cloudbees.example.mobile.deposit.api;
 import com.cloudbees.example.mobile.deposit.api.model.Deposit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import java.math.BigDecimal;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
+import java.math.BigDecimal;
+import org.springframework.web.bind.annotation.*;
 
 @Component
 @Path("/account/deposit")
@@ -21,6 +24,10 @@ public class DepositEndpoint {
     private String version;
 
     @GET
+    @ResponseBody
+//  It is possible to override the accept headers to respond on plain text  
+//    @Consumes({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
+    @Produces({ MediaType.APPLICATION_JSON })
     public Deposit getDepositAccount() {
 
         Deposit depositAccount = new Deposit();
