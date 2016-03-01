@@ -1,257 +1,264 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cloudbees.example.mobile.api</groupId>
-    <artifactId>mobile-deposit-api</artifactId>
-    <version>1.0.0-${BUILD_NUMBER}</version>
-    <name>Mobile Deposit API</name>
-    <description>CloudBees example Mobile Deposit API</description>
-    <url>https://github.com/kmadel/mobile-deposit-api</url>
+  <groupId>com.cloudbees.example.mobile.api</groupId>
+  <artifactId>mobile-deposit-api</artifactId>
+  <version>1.0.0-${BUILD_NUMBER}</version>
+  <name>Mobile Deposit API</name>
+  <description>CloudBees example Mobile Deposit API</description>
+  <url>https://github.com/kmadel/mobile-deposit-api</url>
 
-    <parent>
-        <!-- Your own application should inherit from spring-boot-starter-parent -->
+  <parent>
+    <!-- Your own application should inherit from spring-boot-starter-parent -->
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>1.3.0.M1</version>
+  </parent>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>kmadel</id>
+      <name>Kurt Madel</name>
+      <email>kmadel@cloudbees.com</email>
+      <url>https://github.com/kmadel</url>
+    </developer>
+  </developers>
+
+  <scm>
+    <url>https://github.com/cloudbees/mobile-deposit-api</url>
+    <connection>scm:git:https://github.com/cloudbees/mobile-deposit-api.git</connection>
+    <developerConnection>scm:git:https://github.com/cloudbees/mobile-deposit-api.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+  <organization>
+    <name>CloudBees, Inc.</name>
+    <url>http://www.cloudbees.com</url>
+  </organization>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <project.scm.id>github</project.scm.id>
+    <BUILD_NUMBER>SNAPSHOT</BUILD_NUMBER>
+    <BUILD_URL>Not built with Jenkins</BUILD_URL>
+    <GIT_COMMIT>Not supplied</GIT_COMMIT>
+
+    <!-- (1) Sonar connection properties - typically specified on commandline -->
+    <sonar.host.url>http://sonar.beedemo.net:9001</sonar.host.url>
+    <sonar.jdbc.url>jdbc:postgresql://sonar.beedemo.net:5432/sonar</sonar.jdbc.url>
+    <sonar.jdbc.username>user</sonar.jdbc.username>
+    <sonar.jdbc.password>pass</sonar.jdbc.password>
+    <!-- end (1) -->
+
+    <!-- (2) Help Sonar to be sure about language and version -->
+    <sonar.language>java</sonar.language>
+    <sonar.java.source>1.8</sonar.java.source>
+    <!-- end (2) -->
+
+    <!-- (3) mandatory Sonar properties for capturing raw coverage report 
+      output -->
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis> <!-- don't run tests if report file already exists -->
+
+    <!-- where sonar will find the junit reports -->
+    <sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
+    <sonar.junit.itReportsPath>target/failsafe-reports</sonar.junit.itReportsPath>
+
+    <!-- write unit test coverage info to each module's target folder -->
+    <sonar.jacoco.reportPath>target/jacoco-ut.exec</sonar.jacoco.reportPath>
+    <!-- append integration test coverage from each module to the same(!) 
+      file -->
+    <sonar.jacoco.itReportPath>${project.root.basedir}/target/jacoco-it.exec</sonar.jacoco.itReportPath>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jersey</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jetty</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-tomcat</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.3.0.M1</version>
-    </parent>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>.docker</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.2.201409121644</version>
+        <configuration>
+          <append>true</append>
+        </configuration>
+        <executions>
+          <execution>
+            <id>agent-for-ut</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>agent-for-it</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-site</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.4.2</version>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <useReleaseProfile>false</useReleaseProfile>
+          <releaseProfiles>release</releaseProfiles>
+          <tagNameFormat>@{project.version}</tagNameFormat>
+          <goals>deploy</goals>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-provider-gitexe</artifactId>
+            <version>1.8.1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
 
-    <licenses>
-        <license>
-            <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>kmadel</id>
-            <name>Kurt Madel</name>
-            <email>kmadel@cloudbees.com</email>
-            <url>https://github.com/kmadel</url>
-        </developer>
-    </developers>
-
-    <scm>
-        <url>https://github.com/cloudbees/mobile-deposit-api</url>
-        <connection>scm:git:https://github.com/cloudbees/mobile-deposit-api.git</connection>
-        <developerConnection>scm:git:https://github.com/cloudbees/mobile-deposit-api.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
-
-    <organization>
-        <name>CloudBees, Inc.</name>
-        <url>http://www.cloudbees.com</url>
-    </organization>
-
-    <properties>
-        <java.version>1.8</java.version>
-        <project.scm.id>github</project.scm.id>
-
-
-        <!-- (1) Sonar connection properties - typically specified on commandline -->
-        <sonar.host.url>http://sonar.beedemo.net:9001</sonar.host.url>
-        <sonar.jdbc.url>jdbc:postgresql://sonar.beedemo.net:5432/sonar</sonar.jdbc.url>
-        <sonar.jdbc.username>user</sonar.jdbc.username>
-        <sonar.jdbc.password>pass</sonar.jdbc.password>
-        <!-- end (1) -->
-
-        <!-- (2) Help Sonar to be sure about language and version -->
-        <sonar.language>java</sonar.language>
-        <sonar.java.source>1.8</sonar.java.source>
-        <!-- end (2) -->
-
-        <!-- (3) mandatory Sonar properties for capturing raw coverage report output -->
-        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis> <!-- don't run tests if report file already exists -->
-
-        <!-- where sonar will find the junit reports -->
-        <sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
-        <sonar.junit.itReportsPath>target/failsafe-reports</sonar.junit.itReportsPath>
-
-        <!-- write unit test coverage info to each module's target folder -->
-        <sonar.jacoco.reportPath>target/jacoco-ut.exec</sonar.jacoco.reportPath>
-        <!-- append integration test coverage from each module to the same(!) file -->
-        <sonar.jacoco.itReportPath>${project.root.basedir}/target/jacoco-it.exec</sonar.jacoco.itReportPath>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jersey</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jetty</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-tomcat</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-    <build>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>.docker</directory>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.2.201409121644</version>
-                <configuration>
-                    <append>true</append>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>agent-for-ut</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>agent-for-it</id>
-                        <goals>
-                            <goal>prepare-agent-integration</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>jacoco-site</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.4.2</version>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <useReleaseProfile>false</useReleaseProfile>
-                    <releaseProfiles>release</releaseProfiles>
-                    <tagNameFormat>@{project.version}</tagNameFormat>
-                    <goals>deploy</goals>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.scm</groupId>
-                        <artifactId>maven-scm-provider-gitexe</artifactId>
-                        <version>1.8.1</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.2.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>de.jutzig</groupId>
+            <artifactId>github-release-plugin</artifactId>
+            <version>1.1.0</version>
+            <executions>
+              <execution>
+                <id>github-upload</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>release</goal>
+                </goals>
+                <inherited>false</inherited>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
-    </build>
+      </build>
+    </profile>
+  </profiles>
 
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>de.jutzig</groupId>
-                        <artifactId>github-release-plugin</artifactId>
-                        <version>1.1.0</version>
-                        <executions>
-                            <execution>
-                                <id>github-upload</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>release</goal>
-                                </goals>
-                                <inherited>false</inherited>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
-    <!-- Add Spring repositories -->
-    <!-- (you don't need this if you are using a .RELEASE version) -->
-    <repositories>
-        <repository>
-            <id>spring-snapshots</id>
-            <url>http://repo.spring.io/snapshot</url>
-            <snapshots><enabled>true</enabled></snapshots>
-        </repository>
-        <repository>
-            <id>spring-milestones</id>
-            <url>http://repo.spring.io/milestone</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>spring-snapshots</id>
-            <url>http://repo.spring.io/snapshot</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>spring-milestones</id>
-            <url>http://repo.spring.io/milestone</url>
-        </pluginRepository>
-    </pluginRepositories>
+  <!-- Add Spring repositories -->
+  <!-- (you don't need this if you are using a .RELEASE version) -->
+  <repositories>
+    <repository>
+      <id>spring-snapshots</id>
+      <url>http://repo.spring.io/snapshot</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>spring-milestones</id>
+      <url>http://repo.spring.io/milestone</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>spring-snapshots</id>
+      <url>http://repo.spring.io/snapshot</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>spring-milestones</id>
+      <url>http://repo.spring.io/milestone</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>
