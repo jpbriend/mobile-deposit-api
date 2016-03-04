@@ -15,7 +15,9 @@ node ("linux") {
     stage 'Checkout'
 
     checkout scm
-    
+    sh('git rev-parse HEAD > GIT_COMMIT')
+    git_commit=readFile('GIT_COMMIT')
+
     def mvnHome = tool 'Maven 3.x'
 
     def version = getResolvedVersion()
