@@ -4,7 +4,7 @@ def downstreamJob="../${projectname}-update-release-manifest"
 if(!env.BRANCH_NAME){
     BRANCH_NAME=""
 } else {
-    BRANCH_NAME=env.BRANCH_NAME
+    BRANCH_NAME="${env.BRANCH_NAME}/"
 }
 
 log("setup", "BRANCH_NAME=$BRANCH_NAME")
@@ -31,7 +31,7 @@ node ("linux") {
    archive "target/${appname}-${version}.jar"
 
    stage 'trigger system test'
-   build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: "app", value: "${BRANCH_NAME}/appname"], [$class: 'StringParameterValue', name: 'revision', value: version]], wait: false
+   build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: "app", value: "${BRANCH_NAME}${appname}"], [$class: 'StringParameterValue', name: 'revision', value: version]], wait: false
 
    
 }
