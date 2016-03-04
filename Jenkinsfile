@@ -1,83 +1,51 @@
-def buildVersion = null
-properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5']]])
-stage 'Build'
-node('docker-cloud') {
+def projectname='mobile-deposit'
+def appname="${projectname}-api"
+def downstreamJob="../${projectname}-update-release-manifest"
+
+node ("linux") {
+    ensureMaven()
+
+    stage 'Checkout'
+
     checkout scm
-    docker.image('kmadel/maven:3.3.3-jdk-8').inside('-v /data:/data') {
-        sh 'mvn -Dmaven.repo.local=/data/mvn/repo -Dsonar.jdbc.username=NULL -Dsonar.jdbc.password=NULL clean package'
-    }
-    stash name: 'pom', includes: 'pom.xml, src, target'
-}
-
-if(!env.BRANCH_NAME.startsWith("PR")){
-  checkpoint 'Build Complete'
-  stage 'Quality Analysis'
-  node('docker-cloud') {
-    unstash 'pom'
-    //test in paralell
-    parallel(
-        integrationTests: {
-            docker.image('kmadel/maven:3.3.3-jdk-8').inside('-v /data:/data') {
-                sh 'mvn -Dmaven.repo.local=/data/mvn/repo -Dsonar.jdbc.username=NULL -Dsonar.jdbc.password=NULL verify'
-            }
-        }, sonarAnalysis: {
-            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sonar.beedemo',
-                usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-                echo 'run sonar tests'
-                //need to fix sonarAnalysis
-                //docker.image('kmadel/maven:3.3.3-jdk-8').inside('-v /data:/data') {
-                    //sh 'mvn -Dmaven.repo.local=/data/mvn/repo -Dsonar.scm.disabled=True -Dsonar.jdbc.username=$USERNAME -Dsonar.jdbc.password=$PASSWORD sonar:sonar'
-                //}
-            }
-        }, failFast: true
-    )
-  }
-}
-
-if(env.BRANCH_NAME=="master"){
-  checkpoint 'Quality Analysis Complete'
-  stage name: 'Version Release', concurrency: 1
-  node('docker-cloud') {
-    unstash 'pom'
-
-    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
-    if (matcher) {
-        buildVersion = matcher[0][1]
-        echo "Release version: ${buildVersion}"
-    }
-    matcher = null
     
-    docker.withServer('tcp://52.27.249.236:3376', 'beedemo-swarm-cert'){
+    def mvnHome = tool 'Maven 3.x'
 
-        stage 'Build Docker Image'
-        def mobileDepositApiImage
-        dir('target') {
-            mobileDepositApiImage = docker.build "kmadel/mobile-deposit-api:${buildVersion}"
-        }
+    def version = getResolvedVersion()
+    log("Checkout", "Resolved version = ${version}")
+    
+    stage 'Build'
+    sh "mvn clean package -DBUILD_NUMBER=${env.BUILD_NUMBER} -DBUILD_URL=${env.BUILD_URL} -DGIT_COMMIT={git_commit}"
 
-        stage 'Deploy to Prod'
-        try{
-          sh "docker stop beedemo-swarm-master/mobile-deposit-api"
-          sh "docker rm beedemo-swarm-master/mobile-deposit-api"
-        } catch (Exception _) {
-           echo "no container to stop"        
-        }
-        //docker traceability rest call
-        container = mobileDepositApiImage.run("--name mobile-deposit-api -p 8080:8080 --env='constraint:node==beedemo-swarm-master'")
-        sh "curl http://webhook:018ebf0660a74b561b852105e35a33b6@jenkins-latest.beedemo.net/api-team/docker-traceability/submitContainerStatus \
-            --data-urlencode status=deployed \
-            --data-urlencode hostName=prod-server-1 \
-            --data-urlencode hostName=prod \
-            --data-urlencode imageName=cloudbees/mobile-deposit-api \
-            --data-urlencode inspectData=\"\$(docker inspect $container.id)\""
-        
-        
-        stage 'Publish Docker Image'
-        sh "docker -v"
-        //use withDockerRegistry to make sure we are logged in to docker hub registry
-        withDockerRegistry(registry: [credentialsId: 'docker-registry-kmadel-login']) { 
-          mobileDepositApiImage.push()
-        }
-     }
-  }
+   stage 'Test Jar'
+   //sh "java -jar target/${appname}-${version}.jar"
+
+   stage 'publish'    
+   archive "target/${appname}-${version}.jar"
+
+   stage 'trigger system test'
+   build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: 'app', value: appname], [$class: 'StringParameterValue', name: 'revision', value: version]], wait: false
+
+   
+}
+
+// ###### Functions
+
+String getResolvedVersion() {
+   ensureMaven()
+   sh "mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -DBUILD_NUMBER=${env.BUILD_NUMBER} -Dexpression=project.version | grep -v '\\[' > ver.txt"
+   def v = readFile 'ver.txt'
+   return v.trim()
+}
+
+def ensureMaven() {
+    env.PATH = "${tool 'Maven 3.x'}/bin:${env.PATH}"
+}
+
+def log (step, msg) {
+
+    echo """************************************************************
+Step: $step
+$msg
+************************************************************"""
 }
