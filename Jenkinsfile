@@ -31,7 +31,7 @@ node ("linux") {
    archive "target/${appname}-${version}.jar"
 
    stage 'trigger system test'
-   build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: "app", value: "${BRANCH_NAME}${appname}"], [$class: 'StringParameterValue', name: 'revision', value: version]], wait: false
+   build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: "app", value: "${appname}${BRANCH_NAME}"], [$class: 'StringParameterValue', name: 'revision', value: version]], wait: false
 
    
 }
