@@ -4,9 +4,10 @@ node('docker') {
     //    docker.withServer('tcp://docker.local:1234'){
     docker.image('kmadel/maven:3.3.3-jdk-8').inside('-v /data:/data') {
         sh 'rm -rf *'
-        checkout([$class: 'GitSCM', branches: [[name: '*/master']], clean: true, doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [
-                [credentialsId: 'ab2d3ee0-76a0-4da3-a86d-7e2574a861bd', url: 'https://github.com/harniman/mobile-deposit-api.git']
-            ]])
+        //checkout([$class: 'GitSCM', branches: [[name: '*/master']], clean: true, doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [
+        //        [credentialsId: 'ab2d3ee0-76a0-4da3-a86d-7e2574a861bd', url: 'https://github.com/harniman/mobile-deposit-api.git']
+        //    ]])
+        checkout scm
         sh 'git checkout master'
         sh 'git config user.email "nigel@harniman.net"'
         sh 'git config user.name "nharniman"'
