@@ -8,7 +8,7 @@ node('docker') {
         //        [credentialsId: 'ab2d3ee0-76a0-4da3-a86d-7e2574a861bd', url: 'https://github.com/harniman/mobile-deposit-api.git']
         //    ]])
         checkout scm
-        sh 'git checkout master'
+        //sh 'git checkout master'
         sh 'git config user.email "nigel@harniman.net"'
         sh 'git config user.name "nharniman"'
         sh 'git remote set-url origin git@github.com:harniman/mobile-deposit-api.git'
