@@ -11,6 +11,8 @@ log("setup", "BRANCH_NAME=$BRANCH_NAME")
     
 node ("linux") {
     ensureMaven()
+    
+    def version = 0
 
     stage('Checkout') {
         checkout scm
@@ -19,7 +21,7 @@ node ("linux") {
 
         def mvnHome = tool 'Maven 3.x'
 
-        def version = getResolvedVersion()
+        version = getResolvedVersion()
         log("Checkout", "Resolved version = ${version}")
     }
     
