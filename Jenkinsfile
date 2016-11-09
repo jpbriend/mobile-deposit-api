@@ -12,29 +12,32 @@ log("setup", "BRANCH_NAME=$BRANCH_NAME")
 node ("linux") {
     ensureMaven()
 
-    stage 'Checkout'
+    stage('Checkout') {
+        checkout scm
+        sh('git rev-parse HEAD > GIT_COMMIT')
+        git_commit=readFile('GIT_COMMIT')
 
-    checkout scm
-    sh('git rev-parse HEAD > GIT_COMMIT')
-    git_commit=readFile('GIT_COMMIT')
+        def mvnHome = tool 'Maven 3.x'
 
-    def mvnHome = tool 'Maven 3.x'
-
-    def version = getResolvedVersion()
-    log("Checkout", "Resolved version = ${version}")
+        def version = getResolvedVersion()
+        log("Checkout", "Resolved version = ${version}")
+    }
     
-    stage 'Build'
-    sh "mvn clean package -DBUILD_NUMBER=${env.BUILD_NUMBER} -DBUILD_URL=${env.BUILD_URL} -DGIT_COMMIT=${git_commit}"
+    stage('Build') {
+        sh "mvn clean package -DBUILD_NUMBER=${env.BUILD_NUMBER} -DBUILD_URL=${env.BUILD_URL} -DGIT_COMMIT=${git_commit}"
+    }
 
-   stage 'Test Jar'
-   //sh "java -jar target/${appname}-${version}.jar"
+    stage('Test Jar') {
+        //sh "java -jar target/${appname}-${version}.jar"
+    }
 
-   stage 'Publish'    
-   archive "target/${appname}-${version}.jar"
+    stage('Publish') {
+       archive "target/${appname}-${version}.jar"
+    }
 
-   stage 'Trigger Release Build'
-   build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: "app", value: "${appname}${BRANCH_NAME}"], [$class: 'StringParameterValue', name: 'revision', value: version]], wait: false
-
+    stage('Trigger Release Build') {
+       build job: downstreamJob, parameters: [[$class: 'StringParameterValue', name: "app", value: "${appname}${BRANCH_NAME}"], [$class: 'StringParameterValue', name: 'revision', value: version]], wait: false
+    }
    
 }
 
