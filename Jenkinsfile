@@ -35,7 +35,7 @@ node ("linux") {
     }
 
     stage('Publish') {
-       archive "target/${appname}-${version}.jar"
+       archiveArtifacts "target/${appname}-${version}.jar"
     }
 
     stage('Trigger Release Build') {
